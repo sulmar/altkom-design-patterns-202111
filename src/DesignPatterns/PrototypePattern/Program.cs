@@ -9,9 +9,9 @@ namespace PrototypePattern
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Prototype Pattern!");
-            InvoiceCopyTest();
+            // InvoiceCopyTest();
 
-            // ReservationTest();
+            ReservationTest();
         }
 
         private static void ReservationTest()
@@ -25,11 +25,11 @@ namespace PrototypePattern
 
             Display(reservation);
 
-            Reservation secondReservation = new Reservation(reservation.Room,
-                DateTime.Today.AddMonths(1),
-                DateTime.Today.AddMonths(1).AddDays(7),
-                person);
+            Reservation secondReservation = (Reservation) reservation.Clone();
 
+            secondReservation.From = DateTime.Today.AddMonths(1);
+            secondReservation.To = DateTime.Today.AddMonths(1).AddDays(7);
+                
             secondReservation.Breakfast = new Food(FoodType.Regional);
 
             Display(secondReservation);
@@ -83,7 +83,7 @@ namespace PrototypePattern
 
     #region Invoice Model
 
-    public class Invoice
+    public class Invoice : ICloneable
     {
         public Invoice(string number, DateTime createDate, DateTime dueDate, Customer customer)
         {
@@ -102,13 +102,26 @@ namespace PrototypePattern
 
         public ICollection<InvoiceDetail> Details { get; set; }
 
+        public object Clone()
+        {
+            Invoice clone = new Invoice(this.Number, this.CreateDate, this.DueDate, this.Customer);
+
+            foreach (var detail in Details)
+            {                
+                clone.Details.Add((InvoiceDetail) detail.Clone());
+            }
+
+            return clone;
+
+        }
+
         public override string ToString()
         {
             return $"Invoice No {Number} {TotalAmount:C2} {Customer.FullName} paid before {DueDate.ToShortDateString()}";
         }
     }
 
-    public class InvoiceDetail
+    public class InvoiceDetail : ICloneable
     {
         public InvoiceDetail(Product product, int quantity = 1)
         {
@@ -120,6 +133,11 @@ namespace PrototypePattern
         public Product Product { get; set; }
         public int Quantity { get; set; }
         public decimal Amount { get; set; }
+
+        public object Clone()
+        {
+            return new InvoiceDetail(this.Product, this.Quantity);
+        }
 
         public override string ToString()
         {
@@ -171,7 +189,7 @@ namespace PrototypePattern
         public string Flat { get; }
     }
 
-    public class Reservation
+    public class Reservation : ICloneable
     {
         public Reservation(Room room, DateTime from, DateTime to, Person reserving)
         {
@@ -186,7 +204,27 @@ namespace PrototypePattern
         public DateTime To { get; set; }
         public Person Reserving { get; set; }
         public Food Breakfast { get; set; }
+        public int Floor { get; set; }
 
+        public object Clone()
+        {
+            return this.MemberwiseClone();  // Utworzenie płytkiej kopii
+        }
+
+        // Utworzenie głębokiej kopii
+
+        // Polecam:
+        // https://github.com/force-net/DeepCloner
+
+        //public object Clone()
+        //{
+        //    Reservation cloneReservation = new Reservation(this.Room, this.From, this.To, this.Reserving);
+
+        //    cloneReservation.Breakfast = this.Breakfast;
+
+        //    return cloneReservation;
+
+        //}
     }
 
     public class Food
