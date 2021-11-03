@@ -38,7 +38,7 @@ namespace SingletonPattern
 
             PrinterTest();
 
-            // ApplicationContextTest();
+            ApplicationContextTest();
         }
 
         private static void PrinterTest()
@@ -207,6 +207,8 @@ namespace SingletonPattern
         public string LoggedUser { get; set; }
         public DateTime LoggedDate { get; set; }
         public Customer SelectedCustomer { get; set; }
+
+        public Location CurrentLocation { get; set; }
     }
 
     public class Customer
