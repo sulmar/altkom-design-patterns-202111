@@ -18,6 +18,7 @@
 ### Strategy Pattern
 ### Template Method Pattern
 ### Visitor Pattern
+### Memento Pattern
 ### State Pattern
 ### Mediator Pattern
 ### Observer Pattern
