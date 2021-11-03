@@ -16,6 +16,8 @@ namespace BuilderPattern
         void AddSectionByGender();
         void AddSectionByProduct();
 
+        void AddFooter();
+
         SalesReport Build();
     }
   
@@ -32,6 +34,11 @@ namespace BuilderPattern
             this.orders = orders;
 
             salesReport = new SalesReport();            
+        }
+
+        public void AddFooter()
+        {
+            salesReport.Footer = $"Wydrukowano z programu ABC w dn. {DateTime.Now}";
         }
 
         public void AddHeader()
@@ -165,7 +172,8 @@ namespace BuilderPattern
 
             bool byProduct = true;
             bool byGender = true;
-            
+
+
             salesReportBuilder.AddHeader();
             
             if (byGender)
@@ -173,6 +181,9 @@ namespace BuilderPattern
 
             if (byProduct)
                 salesReportBuilder.AddSectionByProduct();
+
+            salesReportBuilder.AddFooter();
+
 
             // Product
             SalesReport salesReport = salesReportBuilder.Build();
@@ -261,6 +272,7 @@ namespace BuilderPattern
         public string Title { get; set; }
         public DateTime CreateDate { get; set; }
         public decimal TotalSalesAmount { get; set; }
+        public string Footer { get; set; }
 
         public IEnumerable<ProductReportDetail> ProductDetails { get; set; }
         public IEnumerable<GenderReportDetail> GenderDetails { get; set; }
