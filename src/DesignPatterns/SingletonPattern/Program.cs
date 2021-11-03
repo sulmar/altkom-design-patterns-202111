@@ -99,24 +99,9 @@ namespace SingletonPattern
         {                
         }
 
-        private static object syncLock = new object();
+        private static Lazy<Logger> lazyLogger = new Lazy<Logger>(() => new Logger());
 
-        private static Logger instance;
-        public static Logger Instance
-        {
-            get
-            {
-                lock (syncLock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new Logger();
-                    }
-                }
-
-                return instance;
-            }
-        }
+        public static Logger Instance => lazyLogger.Value;
 
         public void LogInformation(string message)
         {
