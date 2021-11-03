@@ -47,6 +47,76 @@ namespace FactoryMethodPattern
     }
 
 
+    public class PaymentTypeFactory
+    {
+        public PaymentType Create(string input)
+        {
+            var paymentType = Enum.Parse<PaymentType>(Console.ReadLine());
+
+            return paymentType;
+        }
+    }
+
+    public class PaymentViewFactory
+    {
+        public PaymentView Create(PaymentType paymentType)
+        {
+            switch(paymentType)
+            {
+                case PaymentType.Cash: return new CashPaymentView();
+                case PaymentType.CreditCard: return new CreditCardPaymentView();
+                case PaymentType.BankTransfer: return new BankTransferPaymentView();
+
+                default: throw new NotSupportedException();
+            }
+        }
+    }
+
+    public interface IStringIconFactory
+    {
+        string Create(PaymentType paymentType);
+    }
+
+    public class ConsoleStringIconFactory : IStringIconFactory
+    {
+        public string Create(PaymentType paymentType)
+        {
+            return GetIcon(paymentType);
+        }
+
+        private static string GetIcon(PaymentType paymentType)
+        {
+            switch (paymentType)
+            {
+                case PaymentType.Cash: return "[100]";
+                case PaymentType.CreditCard: return "[abc]";
+                case PaymentType.BankTransfer: return "[-->]";
+
+                default: return string.Empty;
+            }
+        }
+    }
+
+    public class HtmlStringIconFactory : IStringIconFactory
+    {
+        public string Create(PaymentType paymentType)
+        {
+            return GetIcon(paymentType);
+        }
+
+        private static string GetIcon(PaymentType paymentType)
+        {
+            switch (paymentType)
+            {
+                case PaymentType.Cash: return "<img src='cash.png' alt='Gotówka'></img>";
+                case PaymentType.CreditCard: return "<img src='creditcard.png' alt='Karta płatnicza'></img>";
+                case PaymentType.BankTransfer: return "<img src='banktransfer.png' alt='Przelew bankowy'></img>";
+
+                default: return string.Empty;
+            }
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -62,6 +132,10 @@ namespace FactoryMethodPattern
 
         private static void PaymentTest()
         {
+            PaymentTypeFactory paymentTypeFactory = new PaymentTypeFactory();
+            PaymentViewFactory paymentViewFactory = new PaymentViewFactory();
+            IStringIconFactory stringIconFactory = new HtmlStringIconFactory();
+
             while (true)
             {
                 Console.Write("Podaj kwotę: ");
@@ -70,45 +144,20 @@ namespace FactoryMethodPattern
 
                 Console.Write("Wybierz rodzaj płatności: (G)otówka (K)karta płatnicza (P)rzelew: ");
 
-                var paymentType = Enum.Parse<PaymentType>(Console.ReadLine());
+                var paymentType = paymentTypeFactory.Create(Console.ReadLine());
 
                 Payment payment = new Payment(paymentType, totalAmount);
 
-                if (payment.PaymentType == PaymentType.Cash)
-                {
-                    CashPaymentView cashPaymentView = new CashPaymentView();
-                    cashPaymentView.Show(payment);
-                }
-                else
-                if (payment.PaymentType == PaymentType.CreditCard)
-                {
-                    CreditCardPaymentView creditCardView = new CreditCardPaymentView();
-                    creditCardView.Show(payment);
-                }
-                else
-                if (payment.PaymentType == PaymentType.BankTransfer)
-                {
-                    BankTransferPaymentView bankTransferPaymentView = new BankTransferPaymentView();
-                    bankTransferPaymentView.Show(payment);
-                }
+                PaymentView paymentView = paymentViewFactory.Create(payment.PaymentType);
 
-                string icon = GetIcon(payment);
+
+                string icon = stringIconFactory.Create(payment.PaymentType);
                 Console.WriteLine(icon);                
             }
 
         }
 
-        private static string GetIcon(Payment payment)
-        {
-            switch (payment.PaymentType)
-            {
-                case PaymentType.Cash: return "[100]"; 
-                case PaymentType.CreditCard: return "[abc]"; 
-                case PaymentType.BankTransfer: return "[-->]";
-
-                default: return string.Empty;
-            }
-        }
+       
 
         private static void VisitCalculateAmountTest()
         {
