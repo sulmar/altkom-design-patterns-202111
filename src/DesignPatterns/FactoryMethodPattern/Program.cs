@@ -72,14 +72,18 @@ namespace FactoryMethodPattern
         }
     }
 
+    // Abstract Factory
     public interface IStringIconFactory
     {
-        string Create(PaymentType paymentType);
+        string CreateIcon(PaymentType paymentType);
+        string CreateColor(decimal amount);
     }
+    
 
+    // Concrete Factory
     public class ConsoleStringIconFactory : IStringIconFactory
     {
-        public string Create(PaymentType paymentType)
+        public string CreateIcon(PaymentType paymentType)
         {
             return GetIcon(paymentType);
         }
@@ -95,11 +99,22 @@ namespace FactoryMethodPattern
                 default: return string.Empty;
             }
         }
+
+        public string CreateColor(decimal amount)
+        {
+            if (amount > 100)
+            {
+                return "Red";
+            }
+            else
+                return "White";
+        }
     }
 
+    // Concrete Factory
     public class HtmlStringIconFactory : IStringIconFactory
     {
-        public string Create(PaymentType paymentType)
+        public string CreateIcon(PaymentType paymentType)
         {
             return GetIcon(paymentType);
         }
@@ -114,6 +129,16 @@ namespace FactoryMethodPattern
 
                 default: return string.Empty;
             }
+        }
+
+        public string CreateColor(decimal amount)
+        {
+            if (amount > 100)
+            {
+                return "#FF00000";
+            }
+            else
+                return "#FFFFFFF";
         }
     }
 
@@ -150,7 +175,7 @@ namespace FactoryMethodPattern
 
                 PaymentView paymentView = paymentViewFactory.Create(payment.PaymentType);
 
-                string icon = stringIconFactory.Create(payment.PaymentType);
+                string icon = stringIconFactory.CreateIcon(payment.PaymentType);
                 Console.WriteLine(icon);                
             }
 
