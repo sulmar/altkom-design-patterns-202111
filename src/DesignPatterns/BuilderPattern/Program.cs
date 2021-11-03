@@ -206,10 +206,10 @@ namespace BuilderPattern
         private static void FluentPhoneTest()
         {
             FluentPhone.Pickup()
-                .From("555999123")
+                .From("555111333")                
                 .To("555000321")
                 .To("555999111")
-                .To("555111000")
+                .To("555111000")                
                 .WithSubject(".NET Design Patterns")
                 .Call();    // Fluent API
 
