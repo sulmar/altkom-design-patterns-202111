@@ -150,7 +150,6 @@ namespace FactoryMethodPattern
 
                 PaymentView paymentView = paymentViewFactory.Create(payment.PaymentType);
 
-
                 string icon = stringIconFactory.Create(payment.PaymentType);
                 Console.WriteLine(icon);                
             }
