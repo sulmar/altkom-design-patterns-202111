@@ -4,6 +4,12 @@ using System.Threading;
 
 namespace SingletonPattern
 {
+    public struct Location
+    {
+        public double Lat { get; set; }
+        public double Lng { get; set; }
+    }
+
     public class Printer
     {
         public Printer()
@@ -17,6 +23,7 @@ namespace SingletonPattern
         {
             Console.WriteLine($"Printing {content}");
         }
+
     }
 
     class Program
@@ -25,11 +32,25 @@ namespace SingletonPattern
         {
             Console.WriteLine("Hello Singleton Pattern!");
 
-            LazyTest();
+            //LazyTest();
 
-            LoggerTest();
+            //LoggerTest();
 
-           // ApplicationContextTest();
+            PrinterTest();
+
+            // ApplicationContextTest();
+        }
+
+        private static void PrinterTest()
+        {
+            Printer printer1 = PrinterSingleton.Instance;
+
+            Printer printer2 = PrinterSingleton.Instance;
+
+            if (ReferenceEquals(printer1, printer2))
+            {
+                Console.WriteLine("The same instances.");
+            }
         }
 
         private static void LazyTest()
@@ -110,6 +131,32 @@ namespace SingletonPattern
                 sw.WriteLine($"{DateTime.Now} {message}");
             }
         }
+    }
+
+    public class LocationSingleton : Singleton<Location>
+    {
+
+    }
+
+    public class PrinterSingleton : Singleton<Printer>
+    {
+        protected PrinterSingleton()
+        {
+
+        }
+    }
+
+    public class Singleton<T>
+        where T : new() // constraint
+    {
+        protected Singleton()
+        {
+
+        }
+
+        private static Lazy<T> lazyLogger = new Lazy<T>(() => new T());
+
+        public static T Instance => lazyLogger.Value;
     }
 
     public class MessageService
