@@ -1,17 +1,46 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 
 namespace SingletonPattern
 {
+    public class Printer
+    {
+        public Printer()
+        {
+            Console.WriteLine("Initializing...");
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+            Console.WriteLine("Ready.");
+        }
+
+        public void Print(string content)
+        {
+            Console.WriteLine($"Printing {content}");
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Singleton Pattern!");
 
+            LazyTest();
+
             LoggerTest();
 
            // ApplicationContextTest();
+        }
+
+        private static void LazyTest()
+        {
+            Lazy<Printer> lazyPrinter = new Lazy<Printer>(()=>new Printer());
+
+            // ...
+            Printer printer = lazyPrinter.Value;
+
+            printer.Print("Hello World!");
+
         }
 
         private static void LoggerTest()
@@ -59,6 +88,8 @@ namespace SingletonPattern
 
         }
     }
+
+    
 
     public class Logger
     {
