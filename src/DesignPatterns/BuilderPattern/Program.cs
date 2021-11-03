@@ -90,6 +90,11 @@ namespace BuilderPattern
             this.orders = orders;
         }
 
+        public void AddFooter()
+        {
+            throw new NotImplementedException();
+        }
+
         public void AddHeader()
         {
             hasHeader = true;
@@ -149,9 +154,9 @@ namespace BuilderPattern
 
             // StringBuilderTest();
 
-            SalesReportTest();
+            // SalesReportTest();
 
-            PhoneTest();
+            FluentPhoneTest();
         }
 
         private static void StringBuilderTest()
@@ -198,8 +203,75 @@ namespace BuilderPattern
             phone.Call("555999123", "555000321", ".NET Design Patterns");
         }
 
-       
+        private static void FluentPhoneTest()
+        {
+            FluentPhone.Pickup()
+                .From("555999123")
+                .To("555000321")
+                .To("555999111")
+                .To("555111000")
+                .WithSubject(".NET Design Patterns")
+                .Call();    // Fluent API
+
+            // ls > grep > grep > files.txt
+        }
     }
+
+    #region FluentPhone
+
+    // Concrete Builder
+    public class FluentPhone
+    {
+        private string from;
+        private ICollection<string> tos;
+        private string subject;
+
+        protected FluentPhone()
+        {
+            tos = Enumerable.Empty<string>().ToList();
+        }
+
+        public static FluentPhone Pickup()
+        {
+            return new FluentPhone();
+        }
+
+        public FluentPhone From(string number)
+        {
+            this.from = number;
+
+            return this;
+        }
+
+        public FluentPhone To(string number)
+        {
+            this.tos.Add(number);
+
+            return this;
+        }
+
+
+        public FluentPhone WithSubject(string subject)
+        {
+            this.subject = subject;
+
+            return this;
+        }
+
+        public void Call() // Build
+        {
+            string to = string.Join(",", tos);
+
+            if (string.IsNullOrEmpty(subject))
+                Console.WriteLine($"[{from}] {to}");
+            else
+                Console.WriteLine($"[{from}] {to} {subject}");
+        }
+    }
+
+
+    #endregion
+
 
     #region SalesReport
 
