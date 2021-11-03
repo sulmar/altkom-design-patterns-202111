@@ -19,11 +19,6 @@ namespace SingletonPattern
             MessageService messageService = new MessageService();
             PrintService printService = new PrintService();
 
-            if (messageService.logger!=null)
-            {
-                printService.logger = messageService.logger;
-            }
-
             messageService.Send("Hello World!");
             printService.Print("Hello World!", 3);
 
@@ -56,9 +51,41 @@ namespace SingletonPattern
 
     #region Logger
 
+    public class ColorLogger : Logger
+    {
+        protected ColorLogger()
+            : base()
+        {
+
+        }
+    }
+
     public class Logger
     {
         private string path = "log.txt";
+
+        protected Logger()
+        {                
+        }
+
+        private static object syncLock = new object();
+
+        private static Logger instance;
+        public static Logger Instance
+        {
+            get
+            {
+                lock (syncLock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new Logger();
+                    }
+                }
+
+                return instance;
+            }
+        }
 
         public void LogInformation(string message)
         {
@@ -75,7 +102,7 @@ namespace SingletonPattern
 
         public MessageService()
         {
-            logger = new Logger();
+            logger = ColorLogger.Instance;
         }
 
         public void Send(string message)
@@ -90,7 +117,7 @@ namespace SingletonPattern
 
         public PrintService()
         {
-            // logger = new Logger();
+            logger = Logger.Instance;
         }
 
         public void Print(string content, int copies)
