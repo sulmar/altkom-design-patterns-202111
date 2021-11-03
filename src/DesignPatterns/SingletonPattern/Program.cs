@@ -11,13 +11,19 @@ namespace SingletonPattern
 
             LoggerTest();
 
-            ApplicationContextTest();
+           // ApplicationContextTest();
         }
 
         private static void LoggerTest()
         {
             MessageService messageService = new MessageService();
             PrintService printService = new PrintService();
+
+            if (messageService.logger!=null)
+            {
+                printService.logger = messageService.logger;
+            }
+
             messageService.Send("Hello World!");
             printService.Print("Hello World!", 3);
 
@@ -84,7 +90,7 @@ namespace SingletonPattern
 
         public PrintService()
         {
-            logger = new Logger();
+            // logger = new Logger();
         }
 
         public void Print(string content, int copies)
