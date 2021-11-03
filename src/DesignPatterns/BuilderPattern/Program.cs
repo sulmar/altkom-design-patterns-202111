@@ -4,19 +4,156 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Xml;
 
 namespace BuilderPattern
 {
+    // Abstract Builder
+    public interface ISalesReportBuilder
+    {
+        void AddHeader();
+        void AddSectionByGender();
+        void AddSectionByProduct();
+
+        SalesReport Build();
+    }
+  
+    // Concrete Builder
+    public class SalesReportBuilder : ISalesReportBuilder
+    {
+        // Product
+        private SalesReport salesReport;
+
+        private IEnumerable<Order> orders;
+
+        public SalesReportBuilder(IEnumerable<Order> orders)
+        {
+            this.orders = orders;
+
+            salesReport = new SalesReport();            
+        }
+
+        public void AddHeader()
+        {
+            salesReport.Title = "Raport sprzedaży";
+            salesReport.CreateDate = DateTime.Now;
+            salesReport.TotalSalesAmount = orders.Sum(s => s.Amount);
+        }
+
+        public void AddSectionByGender()
+        {
+            salesReport.GenderDetails = orders
+               .GroupBy(o => o.Customer.Gender)
+               .Select(g => new GenderReportDetail(
+                           g.Key,
+                           g.Sum(x => x.Details.Sum(d => d.Quantity)),
+                           g.Sum(x => x.Details.Sum(d => d.LineTotal))));
+        }
+
+        public void AddSectionByProduct()
+        {
+            salesReport.ProductDetails = orders
+             .SelectMany(o => o.Details)
+             .GroupBy(o => o.Product)
+             .Select(g => new ProductReportDetail(g.Key, g.Sum(p => p.Quantity), g.Sum(p => p.LineTotal)));
+        }
+
+
+        // Product
+        public SalesReport Build()
+        {           
+
+            return salesReport;
+        }
+
+    }
+
+    public class LazySalesReportBuilder : ISalesReportBuilder
+    {        
+        private IEnumerable<Order> orders;
+
+        private bool hasHeader;
+        private bool hasSectionByGender;
+        private bool hasSectionByProduct;
+
+
+        public LazySalesReportBuilder(IEnumerable<Order> orders)
+        {
+            this.orders = orders;
+        }
+
+        public void AddHeader()
+        {
+            hasHeader = true;
+        }
+
+        public void AddSectionByGender()
+        {
+            hasSectionByGender = true;
+        }
+
+        public void AddSectionByProduct()
+        {
+            hasSectionByProduct = true;          
+        }
+
+
+        // Product
+        public SalesReport Build()
+        {
+            SalesReport salesReport = new SalesReport();
+
+            if (hasHeader)
+            {
+                salesReport.Title = "Raport sprzedaży";
+                salesReport.CreateDate = DateTime.Now;
+                salesReport.TotalSalesAmount = orders.Sum(s => s.Amount);
+            }
+
+            if (hasSectionByGender)
+            {
+                salesReport.GenderDetails = orders
+                  .GroupBy(o => o.Customer.Gender)
+                  .Select(g => new GenderReportDetail(
+                              g.Key,
+                              g.Sum(x => x.Details.Sum(d => d.Quantity)),
+                              g.Sum(x => x.Details.Sum(d => d.LineTotal))));
+            }
+
+            if (hasSectionByProduct)
+            {
+                salesReport.ProductDetails = orders
+                   .SelectMany(o => o.Details)
+                   .GroupBy(o => o.Product)
+                   .Select(g => new ProductReportDetail(g.Key, g.Sum(p => p.Quantity), g.Sum(p => p.LineTotal)));
+            }
+
+            return salesReport;
+        }
+
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Builder Pattern!");
 
-            PhoneTest();
+            // StringBuilderTest();
 
             SalesReportTest();
+
+            PhoneTest();
+        }
+
+        private static void StringBuilderTest()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("Hello World!");
+            stringBuilder.AppendLine("Footer");
+
+            string product = stringBuilder.ToString(); // Build
         }
 
         private static void SalesReportTest()
@@ -24,23 +161,21 @@ namespace BuilderPattern
             FakeOrdersService ordersService = new FakeOrdersService();
             IEnumerable<Order> orders = ordersService.Get();
 
-            SalesReport salesReport = new SalesReport();
+            SalesReportBuilder salesReportBuilder = new SalesReportBuilder(orders);
 
-            salesReport.Title = "Raport sprzedaży";
-            salesReport.CreateDate = DateTime.Now;
-            salesReport.TotalSalesAmount = orders.Sum(s => s.Amount);
+            bool byProduct = true;
+            bool byGender = true;
+            
+            salesReportBuilder.AddHeader();
+            
+            if (byGender)
+                salesReportBuilder.AddSectionByGender();
 
-            salesReport.GenderDetails = orders
-                .GroupBy(o => o.Customer.Gender)
-                .Select(g => new GenderReportDetail(
-                            g.Key,
-                            g.Sum(x => x.Details.Sum(d => d.Quantity)),
-                            g.Sum(x => x.Details.Sum(d => d.LineTotal))));
+            if (byProduct)
+                salesReportBuilder.AddSectionByProduct();
 
-            salesReport.ProductDetails = orders
-                .SelectMany(o => o.Details)
-                .GroupBy(o => o.Product)
-                .Select(g => new ProductReportDetail(g.Key, g.Sum(p => p.Quantity), g.Sum(p => p.LineTotal)));
+            // Product
+            SalesReport salesReport = salesReportBuilder.Build();
 
             Console.WriteLine(salesReport);
 
