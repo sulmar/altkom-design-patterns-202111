@@ -9,9 +9,10 @@ namespace StatePattern
     {
         void MouseDown();
         void MouseUp();
-        void KeyDown();
+        void KeyDown();     
     }
 
+    // Concrete State
     public class SelectionTool : ITool
     {
         public void KeyDown()
@@ -30,6 +31,7 @@ namespace StatePattern
         }
     }
 
+    // Concrete State
     public class BrushTool : ITool
     {
         public void KeyDown()
@@ -47,7 +49,8 @@ namespace StatePattern
             Console.WriteLine("Draw rectangle");
         }
     }
-
+    
+    // Concrete State
     public class EraserTool : ITool
     {
         public void KeyDown()
