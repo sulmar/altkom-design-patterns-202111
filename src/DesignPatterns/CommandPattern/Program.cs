@@ -26,6 +26,8 @@ namespace CommandPattern
 
     public class Message
     {
+        private int papers = 5;
+
         public Message(string from, string to, string content)
         {
             From = from;
@@ -43,16 +45,12 @@ namespace CommandPattern
             Console.WriteLine($"Send message from <{From}> to <{To}> {Content}");
         }
 
-        public bool CanSend()
-        {
-            return !(string.IsNullOrEmpty(From) || string.IsNullOrEmpty(To) || string.IsNullOrEmpty(Content));
-        }
-
         public void Print(byte copies = 1)
         {
             for (int i = 0; i < copies; i++)
             {
                 Console.WriteLine($"Print message from <{From}> to <{To}> {Content}");
+                --papers;
             }
         }
 
@@ -61,6 +59,10 @@ namespace CommandPattern
             return string.IsNullOrEmpty(Content);
         }
 
+        public bool CanSend()
+        {
+            return !(string.IsNullOrEmpty(From) || string.IsNullOrEmpty(To) || string.IsNullOrEmpty(Content)) && papers > 0;
+        }
 
 
     }
