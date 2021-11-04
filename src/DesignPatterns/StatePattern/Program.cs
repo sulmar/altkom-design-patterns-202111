@@ -9,7 +9,13 @@ namespace StatePattern
             Console.WriteLine("Hello State Pattern!");
 
             // OrderTest();
-            LampTest();
+            // LampTest();
+
+            Canvas canvas = new Canvas();
+            canvas.CurrentTool = new BrushTool();
+
+            canvas.MouseDown();
+            canvas.MouseUp();
 
         }
 

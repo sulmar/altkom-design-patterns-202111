@@ -4,47 +4,84 @@ using System.Text;
 
 namespace StatePattern
 {
-    public class Canvas
+    // Abstract State
+    public interface ITool
     {
-        public ToolType ToolType { get; set; }
+        void MouseDown();
+        void MouseUp();
+        void KeyDown();
+    }
+
+    public class SelectionTool : ITool
+    {
+        public void KeyDown()
+        {
+            throw new NotImplementedException();
+        }
 
         public void MouseDown()
         {
-            if (ToolType == ToolType.Selection)
-            {
-                Console.WriteLine("Selection icon");
-            }
-            else if (ToolType == ToolType.Brush)
-            {
-                Console.WriteLine("Brush icon");
-            }
-            else if (ToolType == ToolType.Eraser)
-            {
-                Console.WriteLine("Eraser icon");
-            }
+            Console.WriteLine("Selection icon");
         }
 
         public void MouseUp()
         {
-            if (ToolType == ToolType.Selection)
-            {
-                Console.WriteLine("Draw dashed rectangle");
-            }
-            else if (ToolType == ToolType.Brush)
-            {
-                Console.WriteLine("Draw rectangle");
-            }
-            else if (ToolType == ToolType.Eraser)
-            {
-                Console.WriteLine("Eraser something");
-            }
+            Console.WriteLine("Draw dashed rectangle");
         }
     }
 
-    public enum ToolType
+    public class BrushTool : ITool
     {
-        Selection,
-        Brush,
-        Eraser
+        public void KeyDown()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MouseDown()
+        {
+            Console.WriteLine("Brush icon");
+        }
+
+        public void MouseUp()
+        {
+            Console.WriteLine("Draw rectangle");
+        }
     }
+
+    public class EraserTool : ITool
+    {
+        public void KeyDown()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MouseDown()
+        {
+            Console.WriteLine("Eraser icon");
+        }
+
+        public void MouseUp()
+        {
+            Console.WriteLine("Erase selected object");
+        }
+    }
+
+    // Context
+    public class Canvas
+    {
+        // Current state
+        public ITool CurrentTool { get; set; }
+
+        public void MouseDown()
+        {
+            CurrentTool.MouseDown();
+        }
+
+        public void MouseUp()
+        {
+            CurrentTool.MouseUp();
+        }
+    }
+
+    
 }
