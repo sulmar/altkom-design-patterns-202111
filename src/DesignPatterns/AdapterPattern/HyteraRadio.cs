@@ -2,6 +2,31 @@
 
 namespace AdapterPattern
 {
+
+    // Concrete Adapter
+    public class HyteraRadioAdapter : IRadioAdapter
+    {
+        // Adaptee
+        private HyteraRadio radio;
+
+        public HyteraRadioAdapter()
+        {
+            radio = new HyteraRadio();
+        }
+
+        public void Call(byte channel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(byte channel, string message)
+        {
+            radio.Init();
+            radio.SendMessage(channel, message);
+            radio.Release();
+        }
+    }
+
     public class HyteraRadio
     {
 
