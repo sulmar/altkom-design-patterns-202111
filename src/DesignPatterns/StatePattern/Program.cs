@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Stateless;
+using System;
 
 namespace StatePattern
 {
@@ -9,23 +10,49 @@ namespace StatePattern
             Console.WriteLine("Hello State Pattern!");
 
             // OrderTest();
-            // LampTest();
+            LampTest();
 
+            // CanvasTest();
+
+        }
+
+        private static void CanvasTest()
+        {
             Canvas canvas = new Canvas();
             canvas.CurrentTool = new BrushTool();
 
             canvas.MouseDown();
             canvas.MouseUp();
-
         }
 
         private static void LampTest()
         {
             Lamp lamp = new Lamp();
+
+            Console.WriteLine(lamp.Graph);
+
             Console.WriteLine(lamp.State);
 
             lamp.PowerOn();
             Console.WriteLine(lamp.State);
+
+            lamp.PowerOn();
+            Console.WriteLine(lamp.State);
+
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+
+            
+
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+
+
 
             lamp.PowerOff();
             Console.WriteLine(lamp.State);
@@ -114,45 +141,80 @@ namespace StatePattern
         Done
     }
 
+
+    // dotnet add package Stateless
     public class Lamp
     {
-        public LampState State { get; set; }
+        public LampState State => machine.State;
+
+        private StateMachine<LampState, LampTrigger> machine;
+
+        public string Graph => Stateless.Graph.UmlDotGraph.Format(machine.GetInfo());
+
+        private float level = 0.2f;
 
         public Lamp()
         {
-            State = LampState.Off;
+            machine = new StateMachine<LampState, LampTrigger>(LampState.Off);
+
+            machine.Configure(LampState.Off)
+                .Permit(LampTrigger.Push, LampState.On);
+
+            machine.Configure(LampState.On)
+                .Permit(LampTrigger.Push, LampState.Off)
+                .Permit(LampTrigger.SemiPush, LampState.Power30)
+                .OnEntry(() => Console.WriteLine("RTG"), "RTG")
+                .OnExit(() => Console.WriteLine("bye"), "BYE");
+
+            machine.Configure(LampState.Power30)
+                .Permit(LampTrigger.Push, LampState.Off)
+                .Permit(LampTrigger.SemiPush, LampState.Power60);
+
+            machine.Configure(LampState.Power60)
+                .Permit(LampTrigger.Push, LampState.Off)
+                .PermitIf(LampTrigger.SemiPush, LampState.Power90, ()=> level > 0.5f);
+
+            machine.Configure(LampState.Power90)
+                .Permit(LampTrigger.Push, LampState.Off);
+
+            machine
+                .OnTransitioned(t => Console.WriteLine($"{t.Source} -> {t.Destination}"));
+
+            //    .Permit(LampTrigger.SemiPush, LampState.On);
+
         }
+
 
         public void PowerOn()
         {
-            if (State == LampState.Off)
-            {
-                State = LampState.On;
-            }
-            else
-                throw new InvalidOperationException($"state {State}");
-
+            machine.Fire(LampTrigger.Push);
         }
 
         public void PowerOff()
         {
-            if (State == LampState.On)
-            {
-                State = LampState.Off;
-            }
-            else
-                throw new InvalidOperationException($"state {State}");
-
+            machine.Fire(LampTrigger.Push);
         }
 
+        public void SemiPush() => machine.Fire(LampTrigger.SemiPush);
+
+        public bool CanSemiPush => machine.CanFire(LampTrigger.SemiPush);
+
+    }
 
 
+    public enum LampTrigger
+    {
+        Push,
+        SemiPush
     }
 
     public enum LampState
     {
         On,
-        Off
+        Off,
+        Power30,
+        Power60,
+        Power90,
     }
 
     #endregion
