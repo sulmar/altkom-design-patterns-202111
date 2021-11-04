@@ -205,11 +205,15 @@ namespace BuilderPattern
 
         private static void FluentPhoneTest()
         {
+            string[] numbers = new string[] { "5550666", "5550666", "5550666", };
+
             FluentPhone.Pickup()
                 .From("555111333")                
                 .To("555000321")
                 .To("555999111")
-                .To("555111000")                
+                .To("555111000")      
+                .To(numbers)
+                .To("555000111", "55522200", "555333000")
                 .WithSubject(".NET Design Patterns")
                 .Call();    // Fluent API
 
@@ -219,8 +223,41 @@ namespace BuilderPattern
 
     #region FluentPhone
 
+    public interface IFrom
+    {
+        ITo From(string number);
+    }
+
+    public interface ITo
+    {
+        IToOrCallOrSubject To(string number);
+
+        IToOrCallOrSubject To(params string[] numbers);
+    }
+
+    public interface IToOrCallOrSubject : ICall, ITo, ISubject
+    {
+
+    }
+
+    public interface ISubject
+    {
+        ICall WithSubject(string subject);
+    }
+
+    public interface ICall
+    {
+        void Call();
+    }
+
+    // Abstract Builder
+    public interface IFluentPhone : IFrom, ITo, ICall, IToOrCallOrSubject, ISubject
+    {
+
+    }
+
     // Concrete Builder
-    public class FluentPhone
+    public class FluentPhone : IFluentPhone
     {
         private string from;
         private ICollection<string> tos;
@@ -231,19 +268,19 @@ namespace BuilderPattern
             tos = Enumerable.Empty<string>().ToList();
         }
 
-        public static FluentPhone Pickup()
+        public static IFrom Pickup()
         {
             return new FluentPhone();
         }
 
-        public FluentPhone From(string number)
+        public ITo From(string number)
         {
             this.from = number;
 
             return this;
         }
 
-        public FluentPhone To(string number)
+        public IToOrCallOrSubject To(string number)
         {
             this.tos.Add(number);
 
@@ -251,7 +288,7 @@ namespace BuilderPattern
         }
 
 
-        public FluentPhone WithSubject(string subject)
+        public ICall WithSubject(string subject)
         {
             this.subject = subject;
 
@@ -266,6 +303,16 @@ namespace BuilderPattern
                 Console.WriteLine($"[{from}] {to}");
             else
                 Console.WriteLine($"[{from}] {to} {subject}");
+        }
+
+        public IToOrCallOrSubject To(string[] numbers)
+        {
+            foreach (var number in numbers)
+            {
+                To(number);
+            }
+
+            return this;
         }
     }
 
