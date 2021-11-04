@@ -9,7 +9,12 @@ namespace StatePattern
             Console.WriteLine("Hello State Pattern!");
 
             // OrderTest();
+            LampTest();
 
+        }
+
+        private static void LampTest()
+        {
             Lamp lamp = new Lamp();
             Console.WriteLine(lamp.State);
 
@@ -21,8 +26,6 @@ namespace StatePattern
 
             lamp.PowerOff();
             Console.WriteLine(lamp.State);
-
-
         }
 
         private static void OrderTest()
