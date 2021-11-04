@@ -5,6 +5,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace BuilderPattern
@@ -215,7 +217,8 @@ namespace BuilderPattern
                 .To(numbers)
                 .To("555000111", "55522200", "555333000")
                 .WithSubject(".NET Design Patterns")
-                .Call();    // Fluent API
+                .CallAsync()
+                .ContinueWith(t => Console.WriteLine("Finished call"));    // Fluent API
 
             // ls > grep > grep > files.txt
         }
@@ -248,6 +251,7 @@ namespace BuilderPattern
     public interface ICall
     {
         void Call();
+        Task CallAsync(CancellationToken cancellationToken = default);
     }
 
     // Abstract Builder
@@ -313,6 +317,11 @@ namespace BuilderPattern
             }
 
             return this;
+        }
+
+        public Task CallAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => Call());
         }
     }
 
