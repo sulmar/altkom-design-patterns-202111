@@ -9,20 +9,55 @@ namespace StatePattern
             Console.WriteLine("Hello State Pattern!");
 
             // OrderTest();
+            LampTest();
 
+            // CanvasTest();
+
+        }
+
+        private static void CanvasTest()
+        {
+            Canvas canvas = new Canvas();
+            canvas.CurrentTool = new BrushTool();
+
+            canvas.MouseDown();
+            canvas.MouseUp();
+        }
+
+        private static void LampTest()
+        {
             Lamp lamp = new Lamp();
+
+            Console.WriteLine(lamp.Graph);
+
             Console.WriteLine(lamp.State);
 
             lamp.PowerOn();
             Console.WriteLine(lamp.State);
 
+            lamp.PowerOn();
+            Console.WriteLine(lamp.State);
+
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+
+            
+
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+            lamp.SemiPush();
+            Console.WriteLine(lamp.State);
+
+
+
             lamp.PowerOff();
             Console.WriteLine(lamp.State);
 
             lamp.PowerOff();
             Console.WriteLine(lamp.State);
-
-
         }
 
         private static void OrderTest()
@@ -105,45 +140,20 @@ namespace StatePattern
         Done
     }
 
-    public class Lamp
+
+    public enum LampTrigger
     {
-        public LampState State { get; set; }
-
-        public Lamp()
-        {
-            State = LampState.Off;
-        }
-
-        public void PowerOn()
-        {
-            if (State == LampState.Off)
-            {
-                State = LampState.On;
-            }
-            else
-                throw new InvalidOperationException($"state {State}");
-
-        }
-
-        public void PowerOff()
-        {
-            if (State == LampState.On)
-            {
-                State = LampState.Off;
-            }
-            else
-                throw new InvalidOperationException($"state {State}");
-
-        }
-
-
-
+        Push,
+        SemiPush
     }
 
     public enum LampState
     {
         On,
-        Off
+        Off,
+        Power30,
+        Power60,
+        Power90,
     }
 
     #endregion
