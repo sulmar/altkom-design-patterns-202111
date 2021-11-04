@@ -2,9 +2,32 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 
 namespace StrategyPattern
 {
+
+    public class OrderCalculatorBuilder
+    {
+        private ICanDiscountStrategy canDiscountStrategy;
+        private IGetDiscountStrategy getDiscountStrategy;
+
+        public void AddCanDiscountStrategy(ICanDiscountStrategy canDiscountStrategy)
+        {
+            this.canDiscountStrategy = canDiscountStrategy;
+        }
+
+        public void AddGetDiscountStrategy(IGetDiscountStrategy getDiscountStrategy)
+        {
+            this.getDiscountStrategy = getDiscountStrategy;
+        }
+
+        public SmartOrderCalculator Build()
+        {
+            return new SmartOrderCalculator(canDiscountStrategy, getDiscountStrategy);
+        }
+
+    }
 
     class Program
     {
@@ -13,6 +36,32 @@ namespace StrategyPattern
             Console.WriteLine("Hello Strategy Pattern!");
 
             HappyHoursOrderCalculatorTest();
+
+            HappyHoursPercentageSmartOrderCalculatorTest();
+
+
+        }
+
+        private static void HappyHoursPercentageSmartOrderCalculatorTest()
+        {
+            Customer customer = new Customer("Anna", "Kowalska");
+
+            Order order = CreateOrder(customer);
+            order.OrderDate = DateTime.Today;
+
+            HappyHoursCanDiscountStrategy canDiscountStrategy = new HappyHoursCanDiscountStrategy(TimeSpan.Parse("8:30"), TimeSpan.Parse("15:00"));
+            PercentageGetDiscountStrategy getDiscountStrategy = new PercentageGetDiscountStrategy(0.1m);
+           
+            string json = JsonSerializer.Serialize(getDiscountStrategy);
+
+            // var getDiscountStrategy2 = JsonSerializer.Deserialize<PercentageGetDiscountStrategy>(json);
+
+            SmartOrderCalculator orderCalculator = new SmartOrderCalculator(canDiscountStrategy, getDiscountStrategy);
+
+            var discount = orderCalculator.CalculateDiscount(order);
+
+
+            Console.WriteLine($"Original amount: {order.Amount:C2} Discount: {discount:C2}");
 
 
         }
@@ -24,7 +73,7 @@ namespace StrategyPattern
             Order order = CreateOrder(customer);
             order.OrderDate = DateTime.Today;
 
-            IDiscountStrategy discountStrategy = new HolidayDiscountStrategy(DateTime.Today, 10);
+            IDiscountStrategy discountStrategy = new HolidayFixedDiscountStrategy(DateTime.Today, 10);
 
             OrderCalculator calculator = new OrderCalculator(discountStrategy);
             decimal discount = calculator.CalculateDiscount(order);
