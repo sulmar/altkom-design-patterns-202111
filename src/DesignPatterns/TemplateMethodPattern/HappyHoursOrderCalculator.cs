@@ -2,10 +2,41 @@
 
 namespace TemplateMethodPattern
 {
+    public class Shape
+    {
+
+    }
+
+    public abstract class ShapeCalculator
+    {
+        public abstract bool Check1(Shape shape);
+
+        public abstract bool Check2(Shape shape);
+
+        public abstract decimal Calculate(Shape shape);
+
+        public decimal CalculateArea(Shape shape)
+        {
+            // 1. Check 1
+            if (Check1(shape))
+            {
+
+                // 2. Check 2
+                if (Check2(shape))
+                {
+                    return Calculate(shape);
+                }
+            }
+
+            return decimal.Zero;
+    }
+
+
     public interface IOrderCalculator
     {
         decimal CalculateDiscount(Order order);
     }
+
 
 
     // Template Method
