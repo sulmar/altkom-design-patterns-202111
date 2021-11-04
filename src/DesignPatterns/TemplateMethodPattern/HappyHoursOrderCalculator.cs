@@ -29,6 +29,7 @@ namespace TemplateMethodPattern
             }
 
             return decimal.Zero;
+        }
     }
 
 
