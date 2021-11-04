@@ -22,8 +22,11 @@ namespace StrategyPattern
             Customer customer = new Customer("Anna", "Kowalska");
 
             Order order = CreateOrder(customer);
+            order.OrderDate = DateTime.Today;
 
-            HappyHoursOrderCalculator calculator = new HappyHoursOrderCalculator();
+            IDiscountStrategy discountStrategy = new HolidayDiscountStrategy(DateTime.Today, 10);
+
+            OrderCalculator calculator = new OrderCalculator(discountStrategy);
             decimal discount = calculator.CalculateDiscount(order);
 
             Console.WriteLine($"Original amount: {order.Amount:C2} Discount: {discount:C2}");
