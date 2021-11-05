@@ -16,6 +16,13 @@ namespace FlyweightPattern
             Console.WriteLine("Hello Flyweight Pattern!");
 
             BenchmarkRunner.Run<GameBenchmarks>();
+
+            /* N = 10_000
+             |           Method |    Mean |    Error |   StdDev |     Gen 0 | Allocated |
+            |----------------- |--------:|---------:|---------:|----------:|----------:|
+            |  PlayProblemGame | 2.103 s | 0.0361 s | 0.0338 s | 1000.0000 |     10 MB |
+            | PlaySolutionGame | 3.671 s | 0.0617 s | 0.0577 s | 1000.0000 |      6 MB |
+            */
         }
     }
 
