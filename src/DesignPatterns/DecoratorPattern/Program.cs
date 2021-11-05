@@ -14,9 +14,16 @@ namespace DecoratorPattern
         {
             Console.WriteLine("Hello Decorator Pattern!");
 
+            SalaryTest();
+
             // CalculateOrderDiscountTest();
 
             // FileTest();
+        }
+
+        private static void SalaryTest()
+        {
+            throw new NotImplementedException();
         }
 
         private static void CalculateOrderDiscountTest()
@@ -165,7 +172,7 @@ namespace DecoratorPattern
     {
         public override decimal GetSalary()
         {
-            throw new NotImplementedException();
+            return 1000 + 100;
         }
     }
 
@@ -173,7 +180,7 @@ namespace DecoratorPattern
     {
         public override decimal GetSalary()
         {
-            throw new NotImplementedException();
+            return 5000 + 1000;
         }
     }
 
@@ -181,7 +188,7 @@ namespace DecoratorPattern
     {
         public override decimal GetSalary()
         {
-            throw new NotImplementedException();
+            return 10000 + 1000;
         }
     }
 
