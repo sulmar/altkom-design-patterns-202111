@@ -1,21 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 
 namespace ObserverPattern
 {
+
+    class Printer : IDisposable
+    {
+        private string message;
+
+        public void Print(string message)
+        {
+            this.message = message;
+
+            Log(message);
+
+            // throw new Exception();
+        }
+
+        private static void Log(string message)
+        {
+            File.AppendAllText("temp.txt", message);
+        }
+
+        private void Release()
+        {
+            File.Delete("temp.txt");
+        }
+
+        public void Dispose()
+        {
+            Release();
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
+            // DisposableTest();
+
             Console.WriteLine("Hello Observer Pattern!");
 
             // Covid19Test();
 
-            //   CpuTest();
+            CpuTest();
 
-            WheaterForecastTest();
+            //  WheaterForecastTest();
+        }
+
+        private static void DisposableTest()
+        {
+            using (Printer printer = new Printer())
+            {
+                printer.Print("Hello World!");
+            } // <-- printer.Dispose();
         }
 
         private static void WheaterForecastTest()
@@ -24,7 +67,7 @@ namespace ObserverPattern
 
             IWheaterForecastObserver observer1 = new CurrentWheaterForecastObserver();
             IWheaterForecastObserver observer2 = new DatabaseWheaterForecastObserver();
-            
+
 
             wheaterForecast.Attach(observer1);
             wheaterForecast.Attach(observer2);
@@ -118,32 +161,44 @@ namespace ObserverPattern
         #region CPU
         private static void CpuTest()
         {
+            // dotnet add package System.Reactive
+
             var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 
-            while (true)
-            {
-                float cpu = cpuCounter.NextValue();
 
-                if (cpu < 30)
+            IObservable<float> source = Observable.Interval(TimeSpan.FromSeconds(1))
+                .Select(_ => cpuCounter.NextValue());
+         
+            source
+                .Buffer(TimeSpan.FromSeconds(10))
+                .Select(m=>m.Average())
+                .Where(cpu => cpu < 30)
+                .Subscribe(cpu =>
                 {
                     Console.BackgroundColor = ConsoleColor.Green;
                     Console.WriteLine($"CPU {cpu} %");
                     Console.ResetColor();
-                }
-                else
-                if (cpu > 50)
+                });
+
+            source
+                .Where(cpu => cpu > 50)
+                .Subscribe(cpu =>
                 {
                     Console.BackgroundColor = ConsoleColor.Red;
                     Console.WriteLine($"CPU {cpu} %");
                     Console.ResetColor();
-                }
-                else
+                });
+
+            source
+                .Subscribe(cpu => 
                 {
                     Console.WriteLine($"CPU {cpu} %");
-                }
+                });
 
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-            }
+            Console.WriteLine("Press any key to exit.");
+
+            Console.ReadKey();
+
         }
 
         #endregion
@@ -259,7 +314,7 @@ namespace ObserverPattern
 
             public void Update(WheaterForecast subject)
             {
-                if (subject.Temperature> threshold)
+                if (subject.Temperature > threshold)
                 {
                     Console.BackgroundColor = ConsoleColor.Red;
                     Console.WriteLine($"ALERT Wheather: {subject.Temperature}C {subject.Preasure}hPa {subject.Humidity:P2}");
@@ -278,6 +333,33 @@ namespace ObserverPattern
                 Console.WriteLine($"Save to database: {subject.Temperature}C {subject.Preasure}hPa {subject.Humidity:P2}");
             }
         }
+
+        /*
+
+        // Abstract Observer
+        public interface IObserver<in T>
+        {
+            // Poinformowanie obserwatorów o zakończeniu nadawania
+            void OnCompleted();
+
+            // Poinformowanie obserwatorów o wystąpieniu błędu
+            void OnError(Exception error);
+
+            // Update/Notify
+            void OnNext(T value);
+        }
+
+        // Abstract Subject
+        public interface IObservable<out T>
+        {
+            // Attach
+            IDisposable Subscribe(IObserver<T> observer);
+
+            // Detach -> IDisposable.Dispose()
+            // ???
+        }
+
+        */
 
     }
 
