@@ -1,4 +1,7 @@
-﻿using Microsoft.VisualBasic;
+﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
+using Bogus;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,105 +15,69 @@ namespace FlyweightPattern
         {
             Console.WriteLine("Hello Flyweight Pattern!");
 
-            Game game = new Game(TreeFactory.Create());
-
-            game.Play();
+            BenchmarkRunner.Run<GameBenchmarks>();
         }
     }
 
-    public class TreeFactory
+    // dotnet add package BenchmarkDotNet
+    [MemoryDiagnoser]
+    public class GameBenchmarks
     {
-        public static ICollection<TreeConcret> Create()
-        {
-           TreeModel treeModel1 = new TreeModel(new Mesh(10), new Texture("###"), new Texture("==="));
-            TreeModel treeModel2 = new TreeModel(new Mesh(5), new Texture(">>>"), new Texture("<<<"));
+        private const int N = 10_000;
 
-            Color barkTint = new Color(200, 100, 50);
-            Color leafTint = new Color(100, 100, 100);
+        private readonly Problem.Game problemGame = new Problem.Game(Problem.TreeFactory.Create(N));
+        private readonly Solution.Game solutionGame = new Solution.Game(Solution.TreeFactory.Create(N));
 
-            ICollection<TreeConcret> trees = new Collection<TreeConcret>
-            {
-                new TreeConcret(treeModel1, new Vector(10, 30), 30, 1, barkTint, leafTint),
-                new TreeConcret(treeModel1, new Vector(20, 15), 30, 1, barkTint, leafTint),
-                new TreeConcret(treeModel1, new Vector(40, 30), 30, 1, barkTint, leafTint),
-                new TreeConcret(treeModel1, new Vector(60, 30), 30, 1, barkTint, leafTint),
-                new TreeConcret(treeModel2, new Vector(40, 30), 30, 1, barkTint, leafTint),
-                new TreeConcret(treeModel2, new Vector(60, 30), 30, 1, barkTint, leafTint),
-            };
+        [Benchmark]
+        public void PlayProblemGame() => problemGame.Play();
+        [Benchmark]
+        public void PlaySolutionGame() => solutionGame.Play();
 
-            return trees;
-        }
+
     }
 
+    #region Faker
 
-    public class Game
+    // dotnet add package Bogus
+
+    public class VectorFaker : Faker<Vector>
     {
-        private ICollection<TreeConcret> trees { get; set; }
-
-        public Game(ICollection<TreeConcret> trees)
+        public VectorFaker()
         {
-            this.trees = trees;
-        }
-
-        public void Play()
-        {
-            foreach (var tree in trees)
-            {
-                tree.Draw();
-            }
+            RuleFor(p => p.X, f => f.Random.Int());
+            RuleFor(p => p.Y, f => f.Random.Int());
         }
     }
 
-
-    public class TreeModel
+    public class MeshFaker : Faker<Mesh>
     {
-        private Mesh mesh;
-        private Texture bark;
-        private Texture leaves;
-
-        public TreeModel(Mesh mesh, Texture bark, Texture leaves)
+        public MeshFaker()
         {
-            this.mesh = mesh;
-            this.bark = bark;
-            this.leaves = leaves;
-        }
-
-        public void Draw()
-        {
-            Console.WriteLine($"Tree: mesh: {mesh} bark: {bark} leaves: {leaves}");
+            RuleFor(p => p.Size, f => f.Random.Int(100, 300));
         }
     }
 
-    public class TreeConcret
+    public class TextureFaker : Faker<Texture>
     {
-        public TreeModel TreeModel { get; set; }
-        private Vector position;
-        private double height;
-        private double thickness;
-        private Color barkTint;
-        private Color leafTint;
-
-        public TreeConcret(TreeModel treeModel, Vector position, double height, double thickness, Color barkTint, Color leafTint)
+        public TextureFaker()
         {
-            TreeModel = treeModel;
-            this.position = position;
-            this.height = height;
-            this.thickness = thickness;
-            this.barkTint = barkTint;
-            this.leafTint = leafTint;
+            RuleFor(p => p.Content, f => f.Random.String2(3));
         }
-
-        public void Draw()
-        {
-            TreeModel.Draw();
-            Console.WriteLine($"({position.X}:{position.Y}) leafColor={leafTint}");
-        }
-
     }
+
+
+    #endregion
+
 
     public class Vector
     {
+        public Vector()
+        {
+
+        }
+
         public Vector(int x, int y)
+            : this()
         {
             X = x;
             Y = y;
@@ -122,10 +89,19 @@ namespace FlyweightPattern
 
     public class Mesh
     {
+
+        public Mesh()
+        {
+
+        }
+
         public Mesh(int size)
+            : this()
         {
             Size = size;
         }
+
+       
 
         public int Size { get; set; }
 
@@ -134,7 +110,13 @@ namespace FlyweightPattern
 
     public class Texture
     {
+        public Texture()
+        {
+
+        }
+
         public Texture(string content)
+            : this()
         {
             Content = content;
         }
