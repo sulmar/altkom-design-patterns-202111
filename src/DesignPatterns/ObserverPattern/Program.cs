@@ -156,10 +156,7 @@ namespace ObserverPattern
             void GetChanges();
         }
 
-
-        
-
-        // Subject
+        // Concrete Subject
         public class WheaterForecast : ISubject
         {
             private Random random = new Random();
@@ -235,11 +232,13 @@ namespace ObserverPattern
 
         #endregion
 
+        // Abstract Observer
         public interface IWheaterForecastObserver
         {
             void Update(WheaterForecast subject);
         }
 
+        // Concrete Observer
         public class CurrentWheaterForecastObserver : IWheaterForecastObserver
         {
             public void Update(WheaterForecast subject)
@@ -248,6 +247,7 @@ namespace ObserverPattern
             }
         }
 
+        // Concrete Observer
         public class AlertWheaterForecastObserver : IWheaterForecastObserver
         {
             private readonly int threshold;
@@ -268,6 +268,7 @@ namespace ObserverPattern
             }
         }
 
+        // Concrete Observer
         public class DatabaseWheaterForecastObserver : IWheaterForecastObserver
         {
             public void Update(WheaterForecast subject)
