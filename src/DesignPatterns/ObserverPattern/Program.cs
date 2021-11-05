@@ -22,11 +22,28 @@ namespace ObserverPattern
         {
             WheaterForecast wheaterForecast = new WheaterForecast();
 
+            IWheaterForecastObserver observer1 = new CurrentWheaterForecastObserver();
+            IWheaterForecastObserver observer2 = new DatabaseWheaterForecastObserver();
+            
+
+            wheaterForecast.Attach(observer1);
+            wheaterForecast.Attach(observer2);
+            wheaterForecast.Attach(new AlertWheaterForecastObserver(20));
+
+            int counter = 0;
+
             while (true)
             {
                 wheaterForecast.GetChanges();
 
                 Thread.Sleep(TimeSpan.FromSeconds(1));
+
+                counter++;
+
+                if (counter > 3)
+                {
+                    wheaterForecast.Detach(observer1);
+                }
             }
         }
 
@@ -133,9 +150,35 @@ namespace ObserverPattern
 
         #region WheaterForecast
 
-        public class WheaterForecast
+        // Abstract Subject
+        public interface ISubject
+        {
+            void GetChanges();
+        }
+
+
+        
+
+        // Subject
+        public class WheaterForecast : ISubject
         {
             private Random random = new Random();
+
+            public int Temperature { get; set; }
+            public int Preasure { get; set; }
+            public double Humidity { get; set; }
+
+            private ICollection<IWheaterForecastObserver> observers = new List<IWheaterForecastObserver>();
+
+            public void Attach(IWheaterForecastObserver observer)
+            {
+                this.observers.Add(observer);
+            }
+
+            public void Detach(IWheaterForecastObserver observer)
+            {
+                this.observers.Remove(observer);
+            }
 
             private int GetTemperature()
             {
@@ -155,13 +198,21 @@ namespace ObserverPattern
 
             public void GetChanges()
             {
-                int temperature = GetTemperature();
-                int preasure = GetPreasure();
-                double humidity = GetHumidity();
+                this.Temperature = GetTemperature();
+                this.Preasure = GetPreasure();
+                this.Humidity = GetHumidity();
 
-                DisplayCurrrent(temperature, preasure, humidity);
-                DisplayForecast(temperature, preasure, humidity);
-                DisplayStatistics(temperature, preasure, humidity);
+                foreach (var observer in observers)
+                {
+                    observer.Update(this);
+                }
+            }
+
+            private void SaveCurrent(int temperature, int preasure, double humidity)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(2));
+                // throw new Exception();
+                System.Console.WriteLine($"Save to database: {temperature}C {preasure}hPa {humidity:P2}");
             }
 
             private void DisplayCurrrent(int temperature, int preasure, double humidity)
@@ -171,7 +222,7 @@ namespace ObserverPattern
 
             private void DisplayForecast(int temperature, int preasure, double humidity)
             {
-                System.Console.WriteLine($"Statistics Wheather: {temperature}C {preasure}hPa {humidity:P2}");
+                System.Console.WriteLine($"Forecast Wheather: {temperature}C {preasure}hPa {humidity:P2}");
             }
 
             private void DisplayStatistics(int temperature, int preasure, double humidity)
@@ -184,8 +235,49 @@ namespace ObserverPattern
 
         #endregion
 
+        public interface IWheaterForecastObserver
+        {
+            void Update(WheaterForecast subject);
+        }
+
+        public class CurrentWheaterForecastObserver : IWheaterForecastObserver
+        {
+            public void Update(WheaterForecast subject)
+            {
+                Console.WriteLine($"Current Wheather: {subject.Temperature}C {subject.Preasure}hPa {subject.Humidity:P2}");
+            }
+        }
+
+        public class AlertWheaterForecastObserver : IWheaterForecastObserver
+        {
+            private readonly int threshold;
+
+            public AlertWheaterForecastObserver(int threshold)
+            {
+                this.threshold = threshold;
+            }
+
+            public void Update(WheaterForecast subject)
+            {
+                if (subject.Temperature> threshold)
+                {
+                    Console.BackgroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"ALERT Wheather: {subject.Temperature}C {subject.Preasure}hPa {subject.Humidity:P2}");
+                    Console.ResetColor();
+                }
+            }
+        }
+
+        public class DatabaseWheaterForecastObserver : IWheaterForecastObserver
+        {
+            public void Update(WheaterForecast subject)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(2));
+                // throw new Exception();
+                Console.WriteLine($"Save to database: {subject.Temperature}C {subject.Preasure}hPa {subject.Humidity:P2}");
+            }
+        }
+
     }
-
-
 
 }
