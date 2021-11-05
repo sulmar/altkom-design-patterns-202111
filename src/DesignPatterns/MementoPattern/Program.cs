@@ -12,17 +12,34 @@ namespace MementoPattern
 
             ArticleTest();
 
-            AgreementTest();
+          //  AgreementTest();
         }
 
         private static void ArticleTest()
         {
+            IArticleCaretaker articleCaretaker = new HistoryArticleCaretaker();
+
             var article = new Article();
             article.Content = "a";
+
+            articleCaretaker.SetState(article.CreateMemento());
+
             article.Content = "b";
+
+            articleCaretaker.SetState(article.CreateMemento());
+
             article.Content = "c";
-            
+
+            articleCaretaker.SetState(article.CreateMemento());
+
+            foreach (var snapshot in  articleCaretaker.History)
+            {
+                Console.WriteLine(snapshot);
+            }
+
             // TODO: Undo
+            article.SetMemento( articleCaretaker.GetState());
+            article.SetMemento(articleCaretaker.GetState());
         }
 
         private static void AgreementTest()
