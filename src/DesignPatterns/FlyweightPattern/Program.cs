@@ -20,16 +20,22 @@ namespace FlyweightPattern
 
     public class TreeFactory
     {
-        public static ICollection<Tree> Create()
+        public static ICollection<TreeConcret> Create()
         {
-            ICollection<Tree> trees = new Collection<Tree>
+           TreeModel treeModel1 = new TreeModel(new Mesh(10), new Texture("###"), new Texture("==="));
+            TreeModel treeModel2 = new TreeModel(new Mesh(5), new Texture(">>>"), new Texture("<<<"));
+
+            Color barkTint = new Color(200, 100, 50);
+            Color leafTint = new Color(100, 100, 100);
+
+            ICollection<TreeConcret> trees = new Collection<TreeConcret>
             {
-                new Tree(new Mesh(10), new Texture("###"), new Texture("==="), new Vector(10, 30), 30, 1, new Color(200, 100, 50), new Color(100, 100, 100)),
-                new Tree(new Mesh(10), new Texture("###"), new Texture("==="), new Vector(20, 15), 30, 1, new Color(200, 100, 50), new Color(100, 100, 100)),
-                new Tree(new Mesh(10), new Texture("###"), new Texture("==="), new Vector(40, 30), 30, 1, new Color(200, 100, 50), new Color(100, 100, 100)),
-                new Tree(new Mesh(10), new Texture("###"), new Texture("==="), new Vector(60, 30), 30, 1, new Color(200, 100, 50), new Color(100, 100, 100)),
-                new Tree(new Mesh(5), new Texture(">>>"), new Texture("<<<"), new Vector(40, 30), 30, 1, new Color(200, 100, 50), new Color(100, 100, 100)),
-                new Tree(new Mesh(5), new Texture(">>>"), new Texture("<<<"), new Vector(60, 30), 30, 1, new Color(200, 100, 50), new Color(100, 100, 100)),
+                new TreeConcret(treeModel1, new Vector(10, 30), 30, 1, barkTint, leafTint),
+                new TreeConcret(treeModel1, new Vector(20, 15), 30, 1, barkTint, leafTint),
+                new TreeConcret(treeModel1, new Vector(40, 30), 30, 1, barkTint, leafTint),
+                new TreeConcret(treeModel1, new Vector(60, 30), 30, 1, barkTint, leafTint),
+                new TreeConcret(treeModel2, new Vector(40, 30), 30, 1, barkTint, leafTint),
+                new TreeConcret(treeModel2, new Vector(60, 30), 30, 1, barkTint, leafTint),
             };
 
             return trees;
@@ -39,9 +45,9 @@ namespace FlyweightPattern
 
     public class Game
     {
-        private ICollection<Tree> trees { get; set; }
+        private ICollection<TreeConcret> trees { get; set; }
 
-        public Game(ICollection<Tree> trees)
+        public Game(ICollection<TreeConcret> trees)
         {
             this.trees = trees;
         }
@@ -56,22 +62,37 @@ namespace FlyweightPattern
     }
 
 
-    public class Tree
+    public class TreeModel
     {
         private Mesh mesh;
         private Texture bark;
         private Texture leaves;
+
+        public TreeModel(Mesh mesh, Texture bark, Texture leaves)
+        {
+            this.mesh = mesh;
+            this.bark = bark;
+            this.leaves = leaves;
+        }
+
+        public void Draw()
+        {
+            Console.WriteLine($"Tree: mesh: {mesh} bark: {bark} leaves: {leaves}");
+        }
+    }
+
+    public class TreeConcret
+    {
+        public TreeModel TreeModel { get; set; }
         private Vector position;
         private double height;
         private double thickness;
         private Color barkTint;
         private Color leafTint;
 
-        public Tree(Mesh mesh, Texture bark, Texture leaves, Vector position, double height, double thickness, Color barkTint, Color leafTint)
+        public TreeConcret(TreeModel treeModel, Vector position, double height, double thickness, Color barkTint, Color leafTint)
         {
-            this.mesh = mesh;
-            this.bark = bark;
-            this.leaves = leaves;
+            TreeModel = treeModel;
             this.position = position;
             this.height = height;
             this.thickness = thickness;
@@ -81,8 +102,10 @@ namespace FlyweightPattern
 
         public void Draw()
         {
-            Console.WriteLine($"Tree: mesh: {mesh} bark: {bark} leaves: {leaves} ({position.X}:{position.Y}) leafColor={leafTint}");
+            TreeModel.Draw();
+            Console.WriteLine($"({position.X}:{position.Y}) leafColor={leafTint}");
         }
+
     }
 
     public class Vector
