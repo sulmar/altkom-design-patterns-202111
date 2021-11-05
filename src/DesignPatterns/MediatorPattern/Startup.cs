@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediatorPattern.IServices;
 using MediatorPattern.Services;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +31,7 @@ namespace MediatorPattern
         {
             services.AddSingleton<ICustomerRepository, FakeCustomerRepository>();
             services.AddSingleton<IMessageService, EmailMessageService>();
+            services.AddMediatR(typeof(Startup));
 
             services.AddControllers();
         }
@@ -56,17 +58,17 @@ namespace MediatorPattern
                 Console.WriteLine($"{context.Response.StatusCode}");
             });
 
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.IsHttps)
-                {
-                    await next();
-                }
-                else
-                {
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                }
-            });
+            //app.Use(async (context, next) =>
+            //{
+            //    if (context.Request.IsHttps)
+            //    {
+            //        await next();
+            //    }
+            //    else
+            //    {
+            //        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            //    }
+            //});
 
             app.UseHttpsRedirection();
             app.UseRouting();
