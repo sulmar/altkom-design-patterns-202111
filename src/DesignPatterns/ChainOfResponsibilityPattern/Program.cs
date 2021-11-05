@@ -3,15 +3,122 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ChainOfResponsibilityPattern
 {
+    public interface IHandler
+    {
+        string Handle(decimal request);
+        IHandler SetHandler(IHandler next);
+
+        Task<string> HandleAsync(decimal request);
+    }
+
+    // Abstract handler
+    public class AbstractHandler : IHandler
+    {
+        private IHandler next;
+
+        public virtual string Handle(decimal request)
+        {
+            if (this.next != null)
+            {
+                return this.next.Handle(request);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public virtual Task<string> HandleAsync(decimal request)
+        {
+            return Task.Run(() => Handle(request));
+        }
+
+        public IHandler SetHandler(IHandler next)
+        {
+            this.next = next;
+
+            return next;
+        }
+    }
+
+    // Concrete Handler
+    public class DeveloperHandler : AbstractHandler
+    {
+        public override string Handle(decimal request)
+        {
+            if (request < 100)
+            {
+                return "Sign by developer";
+            }
+            else
+                return base.Handle(request);
+        }
+    }
+
+    public class BossHandler : AbstractHandler
+    {
+        public bool Enabled { get; set; }
+
+        public override string Handle(decimal request)
+        {
+            if (Enabled && request < 5000)
+            {
+                return "Sign by boss";
+            }
+            else
+                return base.Handle(request);
+        }
+
+        
+        
+    }
+
+    public class SecretaryHandler : AbstractHandler
+    {
+        public override string Handle(decimal request)
+        {
+            Console.WriteLine($"LOG [{DateTime.Now}] {request}");
+
+            string response = base.Handle(request);
+
+            Console.WriteLine($"LOG [{DateTime.Now}] {response}");
+
+            return response;
+        }
+    }
+
+
+
     class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Chain of Responsibility Pattern!");
 
+            // CacheProductTest();
+            
+            IHandler developerHandler = new DeveloperHandler();
+            IHandler bossHandler = new BossHandler() { Enabled = true };
+
+
+            IHandler handler = developerHandler
+                    .SetHandler(new SecretaryHandler())
+                        .SetHandler(bossHandler);
+
+            decimal amount = 200;
+
+            string result = developerHandler.Handle(amount);
+
+            Console.WriteLine(result);
+
+        }
+
+        private static void CacheProductTest()
+        {
             CacheProductService cacheProductService = new CacheProductService();
             IProductService productService = new DbProductService();
 
