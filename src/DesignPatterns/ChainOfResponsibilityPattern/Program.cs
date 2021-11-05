@@ -104,7 +104,6 @@ namespace ChainOfResponsibilityPattern
             IHandler developerHandler = new DeveloperHandler();
             IHandler bossHandler = new BossHandler() { Enabled = true };
 
-
             IHandler handler = developerHandler
                     .SetHandler(new SecretaryHandler())
                         .SetHandler(bossHandler);
