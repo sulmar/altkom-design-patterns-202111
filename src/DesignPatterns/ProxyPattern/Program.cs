@@ -3,25 +3,117 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 
 namespace ProxyPattern
 {
+    // Abstract Subject
+    public interface ICustomer
+    {
+        string Name { get; set; }
+
+        void DoWork();
+    }
+
+    // Real Subject
+    public class Customer : ICustomer
+    {
+        public virtual string Name { get; set; }
+
+        public virtual void DoWork()
+        {
+            Console.WriteLine($"working...");
+        }
+    }
+
+    // Wariant klasowy
+    // Proxy
+    public class CustomerClassProxy : Customer, ICustomer
+    {
+        public override string Name
+        {
+            get => base.Name; set
+            {
+                base.Name = value;
+                Console.WriteLine($"[{DateTime.Now}] Changed name {Name}");
+            }
+        }
+
+        public override void DoWork()
+        {
+            Console.WriteLine($"[{DateTime.Now}] Do Work");
+
+            base.DoWork();
+        }
+    }
+
+    // Proxy
+    // Wariant obiektowy
+    public class CustomerProxy : ICustomer
+    {
+        // Real Subject
+        private Customer customer; 
+
+        public CustomerProxy(Customer customer)
+        {
+            this.customer = customer;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return customer.Name;
+            }
+            set
+            {
+                customer.Name = value;
+
+                Console.WriteLine($"[{DateTime.Now}] Changed name {Name}");
+            }
+        }
+
+        public void DoWork()
+        {
+            Console.WriteLine($"[{DateTime.Now}] Do Work");
+
+            customer.DoWork();
+        }
+    }
+
+    public class ProductRepositoryProxy : IProductRepository
+    {
+
+
+        public Product Get(int id)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Proxy Pattern!");
+
+            // ICustomer customer = new CustomerProxy(new Customer());
+
+            ICustomer customer = new CustomerClassProxy();
+            customer.Name = "John";
+            customer.DoWork();
+
+
             GetProductTest();
 
-            SaveProductTest();
+            //SaveProductTest();
 
         }
 
 
         private static void GetProductTest()
         {
-            DbProductRepository productRepository = new DbProductRepository();
-            CacheProductRepository cacheProductRepository = new CacheProductRepository();
+            IProductRepository productRepository = new CacheProductRepository(new DbProductRepository());
 
             while (true)
             {
@@ -30,14 +122,7 @@ namespace ProxyPattern
 
                 if (int.TryParse(Console.ReadLine(), out int productId))
                 {
-                    Product product = cacheProductRepository.Get(productId);
-
-                    if (product == null)
-                    {
-                        product = productRepository.Get(productId);
-
-                        cacheProductRepository.Add(product);
-                    }
+                    Product product = productRepository.Get(productId);
 
                     Console.WriteLine($"{product.Id} {product.Name} {product.UnitPrice:C2}");
                 }
@@ -73,19 +158,73 @@ namespace ProxyPattern
         }
 
         public int Id { get; set; }
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
         public decimal UnitPrice { get; set; }
+
+        public virtual byte[] Photo { get; set; }
+    }
+
+    public class ProductProxy : Product
+    {
+        public bool HasChanged { get; private set; }
+
+        public ProductProxy(int id, string name, decimal unitPrice) : base(id, name, unitPrice)
+        {
+            HasChanged = false;
+        }
+
+        public override string Name
+        {
+            get => base.Name; 
+            set
+            {
+                if (base.Name != null)
+                {
+                    base.Name = value;
+                    HasChanged = true;
+                }
+            }
+        }
+
+        public override byte[] Photo
+        {
+            get
+            {
+                // SELECT Photo from dbo.Products WHERE ProductId = {Id}
+                return base.Photo;
+            }
+
+            set => base.Photo = value;
+        }
     }
 
 
-    public class CacheProductRepository
+    public interface IProductRepository
     {
-        private ICollection<Product> products;
+        Product Get(int id);
+    }
+
+    //  Proxy Subject
+    public class CacheProductRepository : IProductRepository
+    {
+        // Real subject
+
+        private readonly IProductRepository productRepository;
 
         public CacheProductRepository()
         {
             products = new Collection<Product>();
         }
+
+        public CacheProductRepository(IProductRepository productRepository)
+            : this()
+        {
+            this.productRepository = productRepository;
+        }
+
+        private ICollection<Product> products;
+
+
 
         public void Add(Product product)
         {
@@ -97,6 +236,8 @@ namespace ProxyPattern
 
         public Product Get(int id)
         {
+
+            // Before
             Product product = products.SingleOrDefault(p => p.Id == id);
 
             if (product != null)
@@ -106,13 +247,23 @@ namespace ProxyPattern
                 Console.ResetColor();
                 return product;
             }
+            else
+            {
+                // Real subject
+                product = productRepository.Get(id);
 
-            return product;
+
+                // After
+                products.Add(product);
+                return product;
+            }
+
         }
 
     }
 
-    public class DbProductRepository
+    // Real Subject
+    public class DbProductRepository : IProductRepository
     {
         private ICollection<Product> products;
 
@@ -128,6 +279,7 @@ namespace ProxyPattern
 
         public Product Get(int id)
         {
+            Thread.Sleep(TimeSpan.FromSeconds(3));
             Console.BackgroundColor = ConsoleColor.Red;
             Console.WriteLine($"Get product {id} from database");
             Console.ResetColor();
