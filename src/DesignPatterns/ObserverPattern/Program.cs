@@ -168,6 +168,9 @@ namespace ObserverPattern
 
             IObservable<float> source = Observable.Interval(TimeSpan.FromSeconds(1))
                 .Select(_ => cpuCounter.NextValue());
+
+
+            source.Subscribe(new ConsoleObservator());
          
             source
                 .Buffer(TimeSpan.FromSeconds(10))
@@ -202,6 +205,24 @@ namespace ObserverPattern
         }
 
         #endregion
+
+        public class ConsoleObservator : IObserver<float>
+        {
+            public void OnCompleted()
+            {
+                Console.WriteLine("Koniec transmisji");
+            }
+
+            public void OnError(Exception error)
+            {
+                Console.WriteLine(error.Message);
+            }
+
+            public void OnNext(float cpu)
+            {
+                Console.WriteLine($"CPU {cpu} %");
+            }
+        }
 
         #region WheaterForecast
 
