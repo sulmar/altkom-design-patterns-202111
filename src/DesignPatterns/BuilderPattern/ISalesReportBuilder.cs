@@ -12,7 +12,6 @@
         SalesReport Build();
     }
 
-    #endregion
 
 
 }

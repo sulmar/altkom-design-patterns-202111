@@ -19,7 +19,24 @@ namespace BuilderPattern
 
             // SalesReportTest();
 
-            FluentPhoneTest();
+            // FluentPhoneTest();
+
+            LazySalesReportBuilderTest();
+        }
+
+        private static void LazySalesReportBuilderTest()
+        {
+            FakeOrdersService ordersService = new FakeOrdersService();
+            IEnumerable<Order> orders = ordersService.Get();
+
+            SalesReport salesReport = new LazySalesReportBuilder(orders)
+                .AddHeader("Raport sprzedaży")
+                .AddSectionByGender()
+                .AddSectionByProduct()
+                .AddFooter()
+                .Build();
+
+            Console.WriteLine(salesReport);
         }
 
         private static void StringBuilderTest()
@@ -266,7 +283,7 @@ namespace BuilderPattern
         public IEnumerable<ProductReportDetail> ProductDetails { get; set; }
         public IEnumerable<GenderReportDetail> GenderDetails { get; set; }
 
-
+            
         public override string ToString()
         {
             string output = string.Empty;
